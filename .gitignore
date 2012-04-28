@@ -1,0 +1,10 @@
+target
+*.*.swp
+*.json
+!settings.json
+
+# OS X files #
+.DS_Store*
+enthumbs.db
+Icon?
+Thumbs.db
