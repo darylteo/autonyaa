@@ -6,7 +6,7 @@ import simplejson as json
 import re
 import os
 
-
+import sched,time
 
 def initSettings(url):
    if(not os.path.isfile(url)):
@@ -93,7 +93,7 @@ def downloadToTarget(url,filename,target_url):
    f.close()
    
 
-def doUpdateSub(subscription, history):
+def doUpdateSub(subscription, target_dir, history):
 
    def buildRegex(expression):
       expression = re.sub(r"[\[\]\.]",r'\\\g<0>', expression)
@@ -102,6 +102,9 @@ def doUpdateSub(subscription, history):
 
    data = loadFeed(subscription['feed'])
    subs = subscription['subs']
+   feed_url = subscription['feed']
+
+   # compile subscription templates into regex expressions
    subs = map(buildRegex,subs)
 
    for entry in data.entries:
@@ -117,39 +120,48 @@ def doUpdateSub(subscription, history):
       downloadToTarget(
          entry.link + '.torrent',
          entry.title,
-         target_url
+         target_dir 
       )
 
       # if successful download then add to history
       history.add(entry.title)
 
+      print 'Downloaded ' + entry.title
 
 
-
-def doUpdate():
-   initSettings('settings.json')
-   settings = loadSettings('settings.json')
+def doUpdate(settings,scheduler):
+   scheduler.enter(
+      60,  # 1 minutes
+      1,   # priority 1
+      doUpdate,
+      (settings,scheduler)   # params
+   )
 
    subs_url = settings['subscriptions_file']
    history_url = settings['history_file']
-   target_url = settings['target_dir']
+   target_dir = settings['target_dir']
 
    initFiles(
       subs_url,
       history_url,
-      target_url
+      target_dir
    )
 
    history = loadHistory(history_url)
    subs = loadSubscriptions(subs_url)
 
    for sub in subs:
-      doUpdateSub(sub,history)
+      doUpdateSub(sub,target_dir,history)
 
    saveHistory(history,history_url)
 
 def main():
-   doUpdate()
+   initSettings('settings.json')
+   settings = loadSettings('settings.json')
+
+   scheduler = sched.scheduler(time.time,time.sleep)
+   scheduler.enter(60,1,doUpdate,(settings,scheduler))
+   scheduler.run()
 
 
 main()
