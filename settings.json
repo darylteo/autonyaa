@@ -1,5 +1,4 @@
 {
-   "subscriptions_file": "subscriptions.json",
-   "target_dir": "/mnt/files/samba/torrents/watch",
-   "history_file": "history.json" 
+   "subscription_file": "subscriptions.json",
+   "destination_dir": "/mnt/files/samba/torrents/watch"
 }

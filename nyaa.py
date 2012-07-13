@@ -12,11 +12,11 @@ import sched,time
 
 def main():
   
-   def getSettings(settings_file):
-      return dict([
-         ( "subscription_file", "subscriptions.json" ),
-         ( "destination_dir", "target" )
-      ])
+   def getSettings(filename):
+      with open(filename,"r") as f:
+         return json.loads(
+            f.read()
+         )
 
    def getSubscriptions(filename):
       with open(filename,"r") as f:
