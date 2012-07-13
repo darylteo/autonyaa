@@ -1,4 +1,4 @@
 {
-   "subscription_file": "subscriptions.json",
-   "destination_dir": "/mnt/files/samba/torrents/watch"
+   "subscription_file": "/usr/lib/autonyaa/subscriptions.json",
+   "destination_dir": "target"
 }

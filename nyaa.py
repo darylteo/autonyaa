@@ -77,7 +77,7 @@ def main():
       for title,link in entries:
          download(link,os.path.join(destination,title + ".torrent"))
 
-   settings = getSettings("settings.json")
+   settings = getSettings(os.path.join("/usr/lib/autonyaa/settings.json"))
 
    downloadFiles(
       getNewUpdates(
