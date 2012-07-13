@@ -1,18 +1,22 @@
 # encoding: utf-8
 
 # imports
-import urllib2
 import feedparser
 import simplejson as json
 import re
 import os
 
+import urllib2
+import contextlib
 import sched,time
 
 def main():
   
-   def getSettings():
-      print("Get Settings")
+   def getSettings(settings_file):
+      return dict([
+         ( "subscription_file", "subscriptions.json" ),
+         ( "destination_dir", "target" )
+      ])
 
    def getSubscriptions(filename):
       with open(filename,"r") as f:
@@ -20,12 +24,12 @@ def main():
             f.read()
          )
 
-   def getFeed(url):
-      print("Read Feed: " + url)
+   def getNewUpdates(subscriptions):
+      def getFeed(url):
+         print("Read Feed: " + url)
 
-      return feedparser.parse(url)
+         return feedparser.parse(url)
 
-   def checkSubscriptions(subscriptions):
       def buildRegex(expression):
          expression = re.sub(r"[\[\]\.]",r'\\\g<0>', expression)
          expression = re.sub(r'{{(.+?)}}',r'(?P<\g<1>>.+?)',expression)
@@ -35,6 +39,8 @@ def main():
          for sub in subs:
             if re.match(sub,entry.title):
                return entry
+
+      matches = []
 
       for group in subscriptions:
          print("Checking Subs for '" + group["name"] + "'")
@@ -46,26 +52,40 @@ def main():
          print(titles) 
          feed = getFeed(group["url"]) 
 
-         matches = [
-            entry for entry in 
+         matches.extend([
+            (
+               entry.title,
+               entry.link
+            ) for entry in 
             [
                isSubbed(titles,entry) for entry in feed.entries 
             ]
             if entry != None
-         ]
+         ])
 
-         downloadFiles(matches)
+      return matches
 
-   def downloadFiles(entries):
-      print("Download Files")
+   def downloadFiles(entries,destination):
+      def download(url, target):
+         print("Downloading " + url + " to " + target)
 
-      for entry in entries:
-         print entry.title,entry.link
+         with contextlib.closing(urllib2.urlopen(url)) as r:
+            with open(target,"w") as f:
+               f.write(r.read()) 
 
-   checkSubscriptions(
-      getSubscriptions(
-         "subscriptions.json"
-      )
+
+      for title,link in entries:
+         download(link,os.path.join(destination,title + ".torrent"))
+
+   settings = getSettings("settings.json")
+
+   downloadFiles(
+      getNewUpdates(
+         getSubscriptions(
+            settings["subscription_file"]
+         )
+      ),
+      settings["destination_dir"]
    )
 
 main()
