@@ -1,5 +1,4 @@
 app:
  build: .
  volumes:
-   - /home/dteo/samba/downloads/watch/:/nyaa/target
-   - ./configs:/nyaa/configs
+   - ./:/nyaa
