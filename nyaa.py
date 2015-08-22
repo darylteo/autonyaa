@@ -13,6 +13,7 @@ import sched,time
 def main():
   
    def getSettings(filename):
+      print("Read Settings from " + filename)
       with open(filename,"r") as f:
          return json.loads(
             f.read()
@@ -77,7 +78,7 @@ def main():
       for title,link in entries:
          download(link,os.path.join(destination,title + ".torrent"))
 
-   settings = getSettings(os.path.join("/usr/lib/autonyaa/settings.json"))
+   settings = getSettings(os.path.join("settings.json"))
 
    downloadFiles(
       getNewUpdates(
